@@ -1,0 +1,262 @@
+---
+title: "Testing different normalisation schemes in the microbiome data set"
+author: "Ricard Argelaguet"
+date: "2/17/2020"
+output: BiocStyle::html_document
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(compositions)
+library(reshape2)
+# library(readr)
+library(DESeq2)
+library(cowplot)
+library(MOFA2)
+```
+
+# Load data
+
+```{r message=FALSE}
+load("/Users/ricard/data/mofa_microbiome/rds/source_data_MOFA_microbiome.RDS")
+
+metadata <- read.table("/Users/ricard/data/mofa_microbiome/metadata.txt", header=T)
+```
+
+
+Preprocess
+```{r}
+count_v <- viruses %>%
+  group_by(sample, feature) %>%
+  summarize(counts=sum(num_reads)) %>%
+  ungroup %>%
+  filter(complete.cases(.)) %>%
+  dcast(sample ~ feature, value.var="counts", fill=0) %>%
+  column_to_rownames("sample") %>%
+  as.matrix
+
+count_v[1:3,1:3]
+```
+
+Plot summary statistics
+```{r}
+hist(x = apply(count_v,1,sum),main="Sum of counts per sample")
+hist(x = apply(count_v,2,sum),main="Sum of counts per virus")
+```
+
+```{r}
+tail(sort(apply(count_v,2,sum)),n=5)
+sort(apply(count_v,2,sum))
+```
+
+
+# Normalise virus data
+
+## Normalise with CLR
+```{r}
+norm_v.clr <- as.data.frame(clr(count_v+0.1)) %>% t
+norm_v.clr[1:3,1:3]
+```
+
+
+## Normalise with scran
+
+```{r}
+library(SingleCellExperiment)
+library(scran)
+
+sce <- SingleCellExperiment(list(counts=t(count_v)))
+sce <- normalize(sce)
+
+norm_v.scran <- logcounts(sce)
+norm_v.scran[1:3,1:3]
+```
+
+## Normalise with DESeq2
+
+Does not work because there are too many zeros
+```{r}
+# # Create a dummy coldata
+# coldata <- DataFrame( foo=factor(rep(1,nrow(count_v))) )
+# 
+# # create DESeq object
+# dds <- DESeqDataSetFromMatrix(t(count_v), colData=coldata, design=~1)
+# 
+# # VST
+# dds <- varianceStabilizingTransformation(dds, blind=TRUE) 
+# 
+# # Fetch normalised counts
+# norm_v.scran <- assay(dds)
+# 
+# norm_v.scran[1:3,1:3]
+```
+
+## Compare
+
+```{r}
+plot(
+  x = colMeans(norm_v.scran), 
+  y = colMeans(norm_v.clr), 
+  xlab = "scran (mean expr per cell)", 
+  ylab = "CLR (mean expr per cell)"
+)
+```
+
+```{r}
+plot(
+  x = rowMeans(norm_v.scran), 
+  y = rowMeans(norm_v.clr), 
+  xlab = "scran (mean expr per gene)", 
+  ylab = "CLR (mean expr per gene)"
+)
+```
+
+```{r}
+hist(
+  x = diag(cor(norm_v.scran, norm_v.clr)), 
+  xlim = c(0,1), 
+  main="Correlation coefficient per gene (across cells)"
+)
+```
+
+```{r}
+hist(
+  x = diag(cor(t(norm_v.scran), t(norm_v.clr))), 
+  xlim=c(0,1), 
+  main="Correlation coefficient per cell (across genes)"
+)
+```
+
+# Run MOFA
+
+## with CLR normalisation
+
+```{r message=FALSE}
+mofa.clr <- create_mofa(list("virus (CLR)"=norm_v.clr))
+
+model_opts <- get_default_model_options(mofa.clr)
+model_opts$num_factors <- 5
+
+mofa.clr <- prepare_mofa(mofa.clr, model_options = model_opts)
+
+mofa.clr <- run_mofa(mofa.clr)
+```
+
+## with scran normalisation
+
+```{r message=FALSE}
+mofa.scran <- create_mofa(list("virus (scran)"=norm_v.scran))
+
+model_opts <- get_default_model_options(mofa.scran)
+model_opts$num_factors <- 5
+
+mofa.scran <- prepare_mofa(mofa.scran, model_options = model_opts)
+
+mofa.scran <- run_mofa(mofa.scran)
+```
+
+## Add sample metadata to the models
+
+```{r}
+# makes sure that samples are in the correct order
+metadata <- metadata[match(colnames(norm_v.scran), metadata$sample),]
+
+# add dummy group column 
+metadata <- metadata %>% mutate(group = "group1")
+
+# add metadata to the model
+samples_metadata(mofa.scran) <- metadata 
+samples_metadata(mofa.clr) <- metadata 
+```
+
+# Compare MOFA models
+
+## Variance explained
+
+```{r}
+p1 <- plot_variance_explained(mofa.clr, plot_total = T)[[2]] +
+  coord_cartesian(ylim=c(0,0.25))
+p2 <- plot_variance_explained(mofa.scran, plot_total = T)[[2]] +
+  coord_cartesian(ylim=c(0,0.25))
+
+plot_grid(plotlist=list(p1,p2))
+```
+
+## Factors correlated with library size
+
+```{r}
+to.plot <- cor(
+  x = get_factors(mofa.clr)[[1]], 
+  y = colSums(mofa.clr@data[[1]][[1]])
+)[,1] %>% unname %>% abs
+
+barplot(to.plot, ylim = c(0,1))
+```
+
+```{r}
+to.plot <- cor(
+  x = get_factors(mofa.scran)[[1]], 
+  y = colSums(mofa.clr@data[[1]][[1]])
+)[,1] %>% unname %>% abs
+
+barplot(to.plot, ylim = c(0,1))
+```
+
+## Correlation of Factors within the model
+
+CLR
+```{r message=FALSE}
+plot_factor_cor(mofa.clr)
+```
+
+scran
+```{r message=FALSE}
+plot_factor_cor(mofa.scran)
+```
+
+## Correlation of Factors between the models
+
+```{r}
+compare_factors(list("deseq"=mofa.scran, "clr"=mofa.clr))
+```
+
+```{r}
+# p1 <- plot_factors(mofa.clr, 
+#   factors = c(1,2), 
+#   color_by = "Category", 
+#   dot_size = 2.5
+# ) + labs(title="CLR") + theme(legend.position = "none")
+# 
+# p2 <- plot_factors(mofa.scran, 
+#   factors = c(1,2), 
+#   color_by = "Category", 
+#   dot_size = 2.5
+# ) + labs(title="scran") + theme(legend.position = "none")
+# 
+# plot_grid(plotlist=list(p1,p2))
+```
+
+## Dimensionality reduction
+
+Run UMAP
+```{r}
+set.seed(42)
+mofa.clr <- run_umap(mofa.clr)
+mofa.scran <- run_umap(mofa.scran)
+```
+
+Plot UMAP
+```{r}
+p1 <- plot_dimred(mofa.clr, method="UMAP", color_by = "Category", dot_size = 2.5) +
+  labs(title="CLR") + theme(legend.position = "none") 
+p2 <- plot_dimred(mofa.scran, method="UMAP", color_by = "Category", dot_size = 2.5) +
+  labs(title="scran") + theme(legend.position = "none") 
+
+plot_grid(plotlist=list(p1,p2))
+```
+
+# sessionInfo
+```{r}
+sessionInfo()
+```
+
