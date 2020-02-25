@@ -20,7 +20,7 @@ samples_metadata(mofa) <- metadata
 
 # subset factors
 threshold.var <- 5
-r2 <- mofa@cache$variance_explained$r2_per_factor[[1]]
+r2 <- mofa@cache$variance_explained$r2_per_factor[[1]]*100
 factors <- which(apply(r2,1,sum) >= threshold.var)
 mofa <- subset_factors(mofa, factors)
 

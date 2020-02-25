@@ -17,3 +17,14 @@ dt <- data.table(
 )
 
 ggboxplot(dt, x="x", y="y")
+
+
+
+
+## test
+w <- get_weights(mofa, views = "Bacteria", scale = T)[[1]]
+w[grep("crAss phage",rownames(w)),]
+w[grep("Ruminococcaceae",rownames(w)),]
+
+corrplot(cor(t(w[grep("Buty",rownames(w)),])))
+## test

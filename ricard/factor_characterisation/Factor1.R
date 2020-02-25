@@ -72,18 +72,14 @@ plot_weights(mofa,
 )
 dev.off()
 
+
+######################
+## Plot top weights ##
+######################
+
 plot_top_weights(mofa, factors=1, view="Viruses", sign = "positive", abs=F, nfeatures = 25)
 plot_top_weights(mofa, factors=1, view="Fungi", sign = "all", abs=F, nfeatures = 15)
-
 plot_top_weights(mofa, factors=1, view="Viruses", sign = "both", abs=T, scale=F, nfeatures = 50)
-
-## test
-w <- get_weights(mofa, views = "Bacteria", scale = T)[[1]]
-w[grep("crAss phage",rownames(w)),]
-w[grep("Ruminococcaceae",rownames(w)),]
-
-corrplot(cor(t(w[grep("Buty",rownames(w)),])))
-## test
 
 ###################
 ## Plot heatmaps ##
@@ -128,7 +124,7 @@ dev.off()
 
 ## Viruses ##
 
-pdf(sprintf("%s/Factor1_virsues_heatmap.pdf",io$outdir), width=7, height=5)
+pdf(sprintf("%s/Factor1_viruses_heatmap.pdf",io$outdir), width=7, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Viruses", 
@@ -153,67 +149,35 @@ dev.off()
 #########################################
 
 # plot factor values coloured by features with top weights
-# sign <- "negative"
-sign <- "positive"
 nfeatures <- 4
 nrow <- 2; ncol <- 2
 
-for (i in views(mofa)) {
-  
-  weights <- sort(get_weights(mofa, factor=1, views=i)[[1]][,1])
-  if (sign=="positive") {
-    features <- names( tail(weights,n=nfeatures) )
-  } else {
-    features <- names( head(weights,n=nfeatures) )
-  }
-  
-  p_list <- list()
-  for (j in features) {
-    p_list[[j]] <- plot_factors(mofa, c(1,3), color_by = j, dot_size = 3.0, legend=FALSE) +
-      ggtitle(j) +
-      theme(
-        plot.title = element_text(hjust = 0.5, size=rel(1.2)),
-        axis.title = element_text(size=rel(0.8)),
-        axis.text = element_text(size=rel(0.8))
-      )
-  }
-  p <- cowplot::plot_grid(plotlist=p_list, nrow=nrow, ncol=ncol)
-  
-  pdf(sprintf("%s/Factor1_vs_Factor3_%s_%s.pdf",io$outdir,i,sign), width=8, height=7, useDingbats = F)
-  print(p)
-  dev.off()
+for (sign in c("positive","negative")) {
+  for (i in views(mofa)) {
     
+    weights <- sort(get_weights(mofa, factor=1, views=i)[[1]][,1])
+    if (sign=="positive") {
+      features <- names( tail(weights,n=nfeatures) )
+    } else {
+      features <- names( head(weights,n=nfeatures) )
+    }
+    
+    p_list <- list()
+    for (j in features) {
+      p_list[[j]] <- plot_factors(mofa, c(1,3), color_by = j, dot_size = 3.0, legend=FALSE) +
+        ggtitle(j) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size=rel(1.2)),
+          axis.title = element_text(size=rel(0.8)),
+          axis.text = element_text(size=rel(0.8))
+        )
+    }
+    p <- cowplot::plot_grid(plotlist=p_list, nrow=nrow, ncol=ncol)
+    
+    pdf(sprintf("%s/Factor1_vs_Factor3_%s_%s.pdf",io$outdir,i,sign), width=8, height=7, useDingbats = F)
+    print(p)
+    dev.off()
+      
+  }
+
 }
-
-
-#########################################
-## Correlate Bacteria vs phage weights ##
-#########################################
-
-Viruses <- features(mofa)[["Viruses"]]
-Viruses <- Viruses[grep("phage",Viruses)]
-Viruses <- stringr::str_replace_all(Viruses, " phage","")
-Bacteria <- features(mofa)[["Bacteria"]]
-Viruses_phages <- Viruses[Viruses %in% Bacteria]
-
-weights.dt <- get_weights(mofa, views=c("Bacteria","Viruses"), factors="all", as.data.frame = T) %>%
-  as.data.table %>%
-  .[,feature:=stringr::str_replace_all(feature, " phage","")] %>%
-  .[feature%in%Viruses_phages] %>%
-  .[,value:=value/max(value), by="view"] %>%
-  .[,value:=abs(value), by="view"] %>%
-  dcast(feature+factor~view, value.var="value")
-
-p <- ggscatter(weights.dt[factor=="Factor1"], x="Bacteria", y="Viruses",
-  add="reg.line", add.params = list(color="blue", fill="lightgray"), conf.int=TRUE) +
-  coord_cartesian(xlim=c(0,1), ylim=c(0,1)) +
-  stat_cor(method = "pearson") +
-  labs(x="Weight in Factor 1 (Viruses)", y="Weight in Factor 1 (Bacteria)")
-  
-
-pdf(sprintf("%s/Bacteria_vs_virus_Factor1.pdf",io$outdir), width=6, height=5, useDingbats = F)
-print(p)
-dev.off()
-
-
-
