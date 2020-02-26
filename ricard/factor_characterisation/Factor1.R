@@ -1,12 +1,77 @@
 source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
 
+#####################
+## Define settings ##
+#####################
+
+opts$good.bacteria <- c(
+  "Agathobacter",
+  "Roseburia",
+  "Faecalibacterium",
+  "Ruminococcus",
+  "Coprococcus",
+  # "Butyricicoccus",
+  "Blautia",
+  # "Anaerostipes",
+  # "Bifidobacterium",
+  "Lachnospiraceae"
+  # "Ruminococcaceae"
+)
+
+opts$bad.bacteria <- c(
+  "Enterococcus", 
+  "Klebsiella",
+  "Staphylococcus",
+  "Enterobacter",
+  "Erysipelotrichaceae",
+  "Escherichia/Shigella"
+)
+
+# opts$unknown.bacteria <- c(
+#   "Adlercreutzia",
+#   "CAG-56",
+#   "GCA-900066575",
+#   "Marvinbryantia",
+#   "Tyzzerella_3"
+# )
+
+opts$bad.fungi <- c(
+  "Saccharomyces",
+  "Aspergillus",
+  "Penicillium",
+  "Debaryomyces",
+  "Candida"
+)
+
+opts$good.fungi <- c(
+  "Dipodascus",
+  "Vishniacozyma",
+  "Filobasidium",
+  "Paraphaeosphaeria"
+)
+
+opts$good.viruses <- c(
+  "Megavirales",
+  "Rhodococcus phage",
+  "Sphingomonas phage",
+  "Picobirnavirus"
+)
+
+opts$bad.viruses <- c(
+  "Enterococcus phage",
+  "Enterobacteriaceae phage",
+  "Escherichia/Shigella phage",
+  "Klebsiella phage",
+  "Staphylococcus phage"
+)
+
+
 ########################
 ## Plot factor values ##
 ########################
 
 p <- plot_factors(mofa, c(1,3), color_by = "Category", dot_size = 3) +
-  # scale_fill_brewer(palette = "Set2") +
   scale_fill_manual(values=opts$colors) +
   theme(
     legend.title = element_blank(),
@@ -48,7 +113,7 @@ plot_weights(mofa,
   view = "Bacteria", 
   manual = list("A"=opts$good.bacteria, "B"=opts$bad.bacteria),
   color_manual = c("black","black"),
-  text_size = 5
+  text_size = 4.5
 )
 dev.off()
 
@@ -56,19 +121,21 @@ pdf(sprintf("%s/Factor1_fungi_weights.pdf",io$outdir), width=4, height=5.5, useD
 plot_weights(mofa, 
   factors = 1, 
   view = "Fungi", 
+  dot_size = 2,
   manual = list("A"=opts$good.fungi, "B"=opts$bad.fungi),
   color_manual = c("black","black"),
-  text_size = 5
+  text_size = 4.5
 )
 dev.off()
 
 pdf(sprintf("%s/Factor1_viruses_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
 plot_weights(mofa, 
   factors = 1, 
+  dot_size = 1.5,
   view = "Viruses", 
   manual = list("A"=opts$good.viruses, "B"=opts$bad.viruses),
   color_manual = c("black","black"),
-  text_size = 5
+  text_size = 4.5
 )
 dev.off()
 
@@ -87,12 +154,11 @@ plot_top_weights(mofa, factors=1, view="Viruses", sign = "both", abs=T, scale=F,
 
 ## Bacteria ##
 
-pdf(sprintf("%s/Factor1_bacteria_heatmap.pdf",io$outdir), width=7, height=5)
+pdf(sprintf("%s/Factor1_bacteria_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Bacteria", 
-  features = c(good.bacteria,bad.bacteria),
-  # color = viridis(100),
+  features = c(opts$good.bacteria,opts$bad.bacteria),
   denoise = TRUE, 
   legend = TRUE,
   cluster_rows = T, cluster_cols = F,
@@ -105,13 +171,12 @@ dev.off()
 
 ## Fungi ##
 
-
-pdf(sprintf("%s/Factor1_fungi_heatmap.pdf",io$outdir), width=7, height=5)
+pdf(sprintf("%s/Factor1_fungi_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Fungi", 
-  features = c(opts$good.fungi,opts$bad.fungi),
-  # color = viridis(100),
+  features = 30,
+  # features = c(opts$good.fungi,opts$bad.fungi),
   denoise = TRUE, 
   legend = TRUE,
   cluster_rows = T, cluster_cols = F,
@@ -124,13 +189,11 @@ dev.off()
 
 ## Viruses ##
 
-pdf(sprintf("%s/Factor1_viruses_heatmap.pdf",io$outdir), width=7, height=5)
+pdf(sprintf("%s/Factor1_viruses_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Viruses", 
-  features = 30,
-  # features = c(opts$good.viruses,opts$bad.viruses),
-  # color = viridis(100),
+  features = c(opts$good.viruses,opts$bad.viruses),
   denoise = TRUE, 
   legend = TRUE,
   cluster_rows = T, cluster_cols = F,

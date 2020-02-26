@@ -1,5 +1,56 @@
+#####################
+## Load model ##
+#####################
+
 source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+#####################
+## Define settings ##
+#####################
+
+opts$positive.bacteria <- c(
+  "Streptococcus",
+  "Actinomyces",
+  "Lactococcus",
+  "Lactobacillus",
+  "Rothia",
+  "Granulicatella"
+)
+
+opts$negative.bacteria <- c(
+  "Parabacteroides", 
+  "Odoribacter",
+  "Bacteroides",
+  # "Enterobacter",
+  "Alistipes",
+  "Hungatella"
+)
+
+
+opts$positive.fungi <- c(
+  "Aureobasidium",
+  "Candida",
+  "Piskurozyma",
+  "Malassezia",
+  "Cladosporium",
+  "Meyerozyma",
+  "Penicillium"
+)
+
+opts$negative.fungi <- c()
+
+opts$positive.viruses <- c(
+  "Streptococcus phage",
+  "Chrysovirus",
+  "Lactobacillus phage",
+  "Lactococcus phage"
+)
+
+opts$negative.viruses <- c(
+  "Escherichia/Shigella phage",
+  "Klebsiella phage"
+)
 
 ########################
 ## Plot factor values ##
@@ -25,6 +76,7 @@ pdf(sprintf("%s/Factor3_category.pdf",io$outdir), width=2.5, height=5, useDingba
 print(p)
 dev.off()
 
+
 ##################
 ## Plot weights ##
 ##################
@@ -35,7 +87,7 @@ pdf(sprintf("%s/Factor3_bacteria_weights.pdf",io$outdir), width=4, height=5.5, u
 plot_weights(mofa, 
   factors = 3, 
   view = "Bacteria", 
-  # manual = list("A"=opts$good.bacteria, "B"=opts$bad.bacteria),
+  # manual = list("A"=opts$positive.bacteria, "B"=opts$negative.bacteria),
   # color_manual = c("black","black"),
   text_size = 5
 )
@@ -45,7 +97,7 @@ pdf(sprintf("%s/Factor3_fungi_weights.pdf",io$outdir), width=4, height=5.5, useD
 plot_weights(mofa, 
   factors = 3, 
   view = "Fungi", 
-  # manual = list("A"=opts$good.fungi, "B"=opts$bad.fungi),
+  # manual = list("A"=opts$positive.fungi, "B"=opts$negative.fungi),
   # color_manual = c("black","black"),
   text_size = 5
 )
@@ -55,7 +107,7 @@ pdf(sprintf("%s/Factor3_viruses_weights.pdf",io$outdir), width=4, height=5.5, us
 plot_weights(mofa, 
   factors = 3, 
   view = "Viruses", 
-  # manual = list("A"=opts$good.viruses, "B"=opts$bad.viruses),
+  # manual = list("A"=opts$positive.viruses, "B"=opts$negative.viruses),
   # color_manual = c("black","black"),
   text_size = 5
 )
@@ -65,98 +117,62 @@ dev.off()
 # plot_top_weights(mofa, factors=1, view="Fungi", sign = "all", abs=F, nfeatures = 15)
 # plot_top_weights(mofa, factors=1, view="Viruses", sign = "both", abs=T, scale=F, nfeatures = 50)
 
-######################
-## Plot top weights ##
-######################
-
-pdf(sprintf("%s/Factor3_fungi_top_weights.pdf",io$outdir), width=6, height=5, useDingbats = F)
-plot_top_weights(mofa, 
-  factors = 3, 
-  view = "Fungi", 
-  nfeatures = 10,
-  sign = "both", 
-  abs=F,
-)
-dev.off()
-
-
-pdf(sprintf("%s/Factor3_bacteria_top_weights.pdf",io$outdir), width=6, height=7, useDingbats = F)
-plot_top_weights(mofa, 
-                 factors = 3, 
-                 view = "Bacteria", 
-                 nfeatures = 15,
-                 sign = "both", 
-                 abs=F,
-)
-dev.off()
-
-
-pdf(sprintf("%s/Factor3_virus_top_weights.pdf",io$outdir), width=6, height=5, useDingbats = F)
-plot_top_weights(mofa, 
-                 factors = 3, 
-                 view = "Viruses", 
-                 nfeatures = 10,
-                 sign = "both", 
-                 abs=F,
-)
-dev.off()
 
 ###################
 ## Plot heatmaps ##
 ###################
 
 ## Bacteria ##
-pdf(sprintf("%s/Factor3_bacteria_heatmap.pdf",io$outdir), width=7, height=5)
+
+pdf(sprintf("%s/Factor3_bacteria_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
-  factor = 3, 
-  view = "Bacteria", 
-  features = 20,
-  # features = c(good.bacteria,bad.bacteria),
-  # color = viridis(100),
-  denoise = TRUE, 
-  legend = FALSE,
-  cluster_rows = T, cluster_cols = F,
-  show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  scale = "row"
+                  factor = 3, 
+                  view = "Bacteria", 
+                  features = c(opts$positive.bacteria,opts$negative.bacteria),
+                  denoise = TRUE, 
+                  legend = FALSE,
+                  cluster_rows = T, cluster_cols = F,
+                  show_colnames = F, show_rownames = T,
+                  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+                  scale = "row"
 )
 dev.off()
 
 
 ## Fungi ##
-pdf(sprintf("%s/Factor3_fungi_heatmap.pdf",io$outdir), width=7, height=5)
+
+pdf(sprintf("%s/Factor3_fungi_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
-  factor = 3, 
-  view = "Fungi", 
-  features = 10,
-  # features = c(opts$good.fungi,opts$bad.fungi),
-  # color = viridis(100),
-  denoise = TRUE, 
-  legend = FALSE,
-  cluster_rows = T, cluster_cols = F,
-  show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  scale = "row"
+                  factor = 3, 
+                  view = "Fungi", 
+                  # features = 30,
+                  features = c(opts$positive.fungi,opts$negative.fungi),
+                  denoise = TRUE, 
+                  legend = FALSE,
+                  cluster_rows = T, cluster_cols = F,
+                  show_colnames = F, show_rownames = T,
+                  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+                  scale = "row"
 )
 dev.off()
 
 
 ## Viruses ##
-pdf(sprintf("%s/Factor3_viruses_heatmap.pdf",io$outdir), width=7, height=5)
+
+pdf(sprintf("%s/Factor3_viruses_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
-  factor = 3, 
-  view = "Viruses", 
-  features = 10,
-  # features = c(opts$good.viruses,opts$bad.viruses),
-  # color = viridis(100),
-  denoise = TRUE, 
-  legend = FALSE,
-  cluster_rows = T, cluster_cols = F,
-  show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  scale = "row"
+                  factor = 3, 
+                  view = "Viruses", 
+                  # features = c(opts$positive.viruses,opts$negative.viruses),
+                  denoise = TRUE, 
+                  legend = FALSE,
+                  cluster_rows = T, cluster_cols = F,
+                  show_colnames = F, show_rownames = T,
+                  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+                  scale = "row"
 )
 dev.off()
+
 
 
 

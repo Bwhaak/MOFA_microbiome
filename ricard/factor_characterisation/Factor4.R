@@ -1,13 +1,36 @@
 source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
 
+opts$positive.bacteria <- c(
+  "Escherichia/Shigella",
+  "Olsenella",
+  # "Terrisporobacter",
+  # "Intestinibacter",
+  "Desulfovibrio",
+  "Slackia",
+  "Christensenellaceae"
+)
+
+
+opts$negative.bacteria <- c(
+  "Pediococcus",
+  "Lactococcus",
+  "Megasphaera",
+  "Lachnospiraceae_UCG-003",
+  "Megamonas"
+  # "Roseburia",
+  # "Agathobacter"
+)
+
+opts$fungi <- c("Aspergillus")
+
 ########################
 ## Plot factor values ##
 ########################
 
-p <- plot_factors(mofa, c(1,4), color_by = "Category", shape_by="Seks", dot_size = 3) +
-  # scale_fill_brewer(palette = "Set2") +
-  # scale_fill_manual(values=opts$colors) +
+# Scatterplot
+p <- plot_factors(mofa, c(1,4), color_by = "Category", dot_size = 3) +
+  scale_fill_manual(values=opts$colors) +
   theme(
     legend.title = element_blank(),
   )
@@ -16,6 +39,7 @@ pdf(sprintf("%s/Factor1_vs_Factor4_category.pdf",io$outdir), width=7, height=5, 
 print(p)
 dev.off()
 
+# Beeswarmplot
 p <- plot_factor(mofa, 
   factor = 4, 
   color_by = "Category", 
@@ -37,12 +61,29 @@ print(p)
 dev.off()
 
 
-pdf(sprintf("%s/Factor4_Beta_lactam.pdf",io$outdir), width=5, height=5, useDingbats = F)
-plot_factor(mofa, factors = 4, color_by = "Beta_lactam", dot_size = 3, add_violin = TRUE, dodge=TRUE, legend = TRUE)
-dev.off()
+##################################
+## Association with antibiotics ##
+##################################
 
-pdf(sprintf("%s/Factor4_Cephalosporins.pdf",io$outdir), width=5, height=5, useDingbats = F)
-plot_factor(mofa, factors = 4, color_by = "Cephalosporins", dot_size = 3, add_violin = TRUE, dodge=TRUE, legend = TRUE)
+p1 <- plot_factor(mofa, factors = 4, color_by = "Cephalosporins", dot_size = 4, add_violin = TRUE, dodge=TRUE, legend = TRUE) +
+  scale_fill_manual(values=c("TRUE"="blue","FALSE"="red")) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+p2 <- plot_factor(mofa, factors = 4, color_by = "Quinolones", dot_size = 4, add_violin = TRUE, dodge=TRUE, legend = TRUE) +
+  scale_fill_manual(values=c("TRUE"="purple","FALSE"="orange")) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+
+pdf(sprintf("%s/Factor4_factor_vs_antibiotics.pdf",io$outdir), width=8, height=5, useDingbats = F)
+cowplot::plot_grid(plotlist=list(p1,p2))
 dev.off()
 
 
@@ -52,27 +93,32 @@ dev.off()
 
 ## Bacteria ##
 
-pdf(sprintf("%s/Factor4_bacteria_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
-plot_weights(mofa, 
+p1 <- plot_weights(mofa, 
   factors = 4, 
   view = "Bacteria", 
   nfeatures = 10,
-  # manual = list("A"=opts$good.bacteria, "B"=opts$bad.bacteria),
+  manual = list("A"=opts$positive.bacteria, "B"=opts$negative.bacteria),
   color_manual = c("black","black"),
-  text_size = 5
+  text_size = 4
 )
+pdf(sprintf("%s/Factor4_bacteria_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
+print(p1)
 dev.off()
 
 
-opts$fungi <- c("Aspergillus","Penicillium")
-
-pdf(sprintf("%s/Factor4_fungi_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
-plot_weights(mofa, 
+p2 <- plot_weights(mofa, 
   factors = 4, 
   view = "Fungi", 
   manual = list(opts$fungi),
-  text_size = 5
+  text_size = 5,
+  dot_size = 2.5
 )
+pdf(sprintf("%s/Factor4_fungi_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
+print(p2)
+dev.off()
+
+pdf(sprintf("%s/Factor4_weights.pdf",io$outdir), width=8, height=5, useDingbats = F)
+cowplot::plot_grid(plotlist=list(p1,p2))
 dev.off()
 
 
@@ -82,18 +128,19 @@ dev.off()
 
 ## Bacteria ##
 
-pdf(sprintf("%s/Factor4_bacteria_heatmap.pdf",io$outdir), width=7, height=5)
+pdf(sprintf("%s/Factor4_bacteria_heatmap.pdf",io$outdir), width=8, height=5)
 plot_data_heatmap(mofa, 
   factor = 4, 
   view = "Bacteria", 
-  # features = c(good.bacteria,bad.bacteria),
-  # color = viridis(100),
+  # features = 35,
+  features = c(opts$positive.bacteria,opts$negative.bacteria),
   denoise = TRUE, 
   legend = FALSE,
   cluster_rows = T, cluster_cols = F,
   show_colnames = F, show_rownames = T,
-  # annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  annotation_samples = "Cephalosporins", annotation_legend = F,
+  annotation_samples = c("Cephalosporins","Quinolones","Category"),  
+  annotation_colors = list("Category"=opts$colors, "Cephalosporins"=c("TRUE"="blue","FALSE"="red"), "Quinolones"=c("TRUE"="purple","FALSE"="orange")), 
+  annotation_legend = F,
   scale = "row"
 )
 dev.off()
@@ -101,56 +148,40 @@ dev.off()
 
 ## Fungi ##
 
+# pdf(sprintf("%s/Factor4_fungi_heatmap.pdf",io$outdir), width=7, height=5)
+# plot_data_heatmap(mofa, 
+#   factor = 4, 
+#   view = "Fungi", 
+#   features = opts$fungi,
+#   denoise = TRUE, 
+#   legend = FALSE,
+#   cluster_rows = T, cluster_cols = F,
+#   show_colnames = F, show_rownames = T,
+#   annotation_samples = c("Cephalosporins","Category"),  
+#   annotation_colors = list("Category"=opts$colors, "Cephalosporins"=c("TRUE"="blue","FALSE"="red")), 
+#   annotation_legend = F,
+#   scale = "row"
+# )
+# dev.off()
 
-pdf(sprintf("%s/Factor4_fungi_heatmap.pdf",io$outdir), width=7, height=5)
-plot_data_heatmap(mofa, 
+#######################
+## Plot data scatter ##
+#######################
+
+p <- plot_data_scatter(mofa,
   factor = 4, 
-  view = "Fungi", 
-  # features = c(opts$good.fungi,opts$bad.fungi),
-  # color = viridis(100),
-  denoise = TRUE, 
-  legend = FALSE,
-  cluster_rows = T, cluster_cols = F,
-  show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  scale = "row"
-)
+  view = "Fungi",
+  dot_size = 3,
+  features = opts$fungi,
+  color_by = "Category",
+  color_legend = FALSE
+) 
+p <- p + scale_color_manual(values=opts$colors) +
+  theme(
+    axis.title = element_text(size=rel(1.0)),
+    axis.text = element_text(size=rel(0.8))
+  )
+
+pdf(sprintf("%s/Factor4_scatter_Asperigullus.pdf",io$outdir), width=7, height=6, useDingbats = F)
+print(p)
 dev.off()
-
-
-#########################################
-## Plot factor values coloured by OTUs ##
-#########################################
-
-# plot factor values coloured by features with top weights
-# sign <- "negative"
-sign <- "positive"
-nfeatures <- 4
-nrow <- 2; ncol <- 2
-
-for (i in views(mofa)) {
-  
-  weights <- sort(get_weights(mofa, factor=1, views=i)[[1]][,1])
-  if (sign=="positive") {
-    features <- names( tail(weights,n=nfeatures) )
-  } else {
-    features <- names( head(weights,n=nfeatures) )
-  }
-  
-  p_list <- list()
-  for (j in features) {
-    p_list[[j]] <- plot_factors(mofa, c(1,3), color_by = j, dot_size = 3.0, legend=FALSE) +
-      ggtitle(j) +
-      theme(
-        plot.title = element_text(hjust = 0.5, size=rel(1.2)),
-        axis.title = element_text(size=rel(0.8)),
-        axis.text = element_text(size=rel(0.8))
-      )
-  }
-  p <- cowplot::plot_grid(plotlist=p_list, nrow=nrow, ncol=ncol)
-  
-  pdf(sprintf("%s/Factor4_vs_Factor3_%s_%s.pdf",io$outdir,i,sign), width=8, height=7, useDingbats = F)
-  print(p)
-  dev.off()
-    
-}
