@@ -33,24 +33,20 @@ opts$positive.fungi <- c(
   "Candida",
   "Piskurozyma",
   "Malassezia",
-  "Cladosporium",
+  # "Cladosporium",
   "Meyerozyma",
   "Penicillium"
 )
-
 opts$negative.fungi <- c()
 
 opts$positive.viruses <- c(
   "Streptococcus phage",
   "Chrysovirus",
+  "Lactococcus phage",
   "Lactobacillus phage",
-  "Lactococcus phage"
+  "Environmental dsRNA virus"
 )
-
-opts$negative.viruses <- c(
-  "Escherichia/Shigella phage",
-  "Klebsiella phage"
-)
+opts$negative.viruses <- c()
 
 ########################
 ## Plot factor values ##
@@ -85,31 +81,33 @@ dev.off()
 
 pdf(sprintf("%s/Factor3_bacteria_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
 plot_weights(mofa, 
-  factors = 3, 
-  view = "Bacteria", 
-  # manual = list("A"=opts$positive.bacteria, "B"=opts$negative.bacteria),
-  # color_manual = c("black","black"),
-  text_size = 5
+             factors = 3, 
+             view = "Bacteria", 
+             manual = list("A"=opts$positive.bacteria, "B"=opts$negative.bacteria),
+             color_manual = c("black","black"),
+             text_size = 4.5
 )
 dev.off()
 
 pdf(sprintf("%s/Factor3_fungi_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
 plot_weights(mofa, 
-  factors = 3, 
-  view = "Fungi", 
-  # manual = list("A"=opts$positive.fungi, "B"=opts$negative.fungi),
-  # color_manual = c("black","black"),
-  text_size = 5
+             factors = 3, 
+             view = "Fungi", 
+             dot_size = 2,
+             manual = list("A"=opts$positive.fungi, "B"=opts$negative.fungi),
+             color_manual = c("black","black"),
+             text_size = 4.5
 )
 dev.off()
 
 pdf(sprintf("%s/Factor3_viruses_weights.pdf",io$outdir), width=4, height=5.5, useDingbats = F)
 plot_weights(mofa, 
-  factors = 3, 
-  view = "Viruses", 
-  # manual = list("A"=opts$positive.viruses, "B"=opts$negative.viruses),
-  # color_manual = c("black","black"),
-  text_size = 5
+             factors = 3, 
+             dot_size = 1.5,
+             view = "Viruses", 
+             manual = list("A"=opts$positive.viruses, "B"=opts$negative.viruses),
+             color_manual = c("black","black"),
+             text_size = 4.5
 )
 dev.off()
 
@@ -162,8 +160,8 @@ dev.off()
 pdf(sprintf("%s/Factor3_viruses_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
                   factor = 3, 
-                  view = "Viruses", 
-                  # features = c(opts$positive.viruses,opts$negative.viruses),
+                  view = "Viruses",
+                  features = c(opts$positive.viruses,opts$negative.viruses),
                   denoise = TRUE, 
                   legend = FALSE,
                   cluster_rows = T, cluster_cols = F,

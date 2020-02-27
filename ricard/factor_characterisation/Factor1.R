@@ -1,3 +1,7 @@
+################
+## Load model ##
+################
+
 source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
 
@@ -71,16 +75,6 @@ opts$bad.viruses <- c(
 ## Plot factor values ##
 ########################
 
-p <- plot_factors(mofa, c(1,3), color_by = "Category", dot_size = 3) +
-  scale_fill_manual(values=opts$colors) +
-  theme(
-    legend.title = element_blank(),
-  )
-
-pdf(sprintf("%s/Factor1_vs_Factor3_category.pdf",io$outdir), width=7, height=5, useDingbats = F)
-print(p)
-dev.off()
-
 p <- plot_factor(mofa, 
   factor = 1, 
   color_by = "Category", 
@@ -92,7 +86,7 @@ p <- plot_factor(mofa,
   scale_fill_manual(values=opts$colors) +
   scale_color_manual(values=opts$colors) +
   theme(
-    legend.position = "right",
+    legend.position = "none",
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
   )
