@@ -2,8 +2,9 @@
 ## Load model ##
 #####################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor3"
 
 #####################
 ## Define settings ##
@@ -26,7 +27,6 @@ opts$negative.bacteria <- c(
   "Alistipes",
   "Hungatella"
 )
-
 
 opts$positive.fungi <- c(
   "Aureobasidium",

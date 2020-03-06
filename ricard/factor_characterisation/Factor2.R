@@ -1,5 +1,10 @@
-source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
+################
+## Load model ##
+################
+
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor2"
 
 opts$negative.fungi <- c(
     "Paraphaeosphaeria",

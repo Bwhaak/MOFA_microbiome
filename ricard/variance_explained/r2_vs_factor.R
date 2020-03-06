@@ -1,14 +1,11 @@
-library(MOFA2)
-library(data.table)
-library(purrr)
 library(ggpubr)
 
-#####################
-## Define settings ##
-#####################
+################
+## Load model ##
+################
 
-io <- list()
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf"
+source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/r2"
 
 #######################################################
 ## Plot variance explained per view vs factor number ##
@@ -26,7 +23,7 @@ threshold.var <- 5
 max.factor <- max(which(apply(r2,1,sum) >= threshold.var))
 
 p <- ggline(r2.dt, x="factor", y="cum_r2", color="view") +
-  # scale_color_brewer(palette = "Dark2") +
+  scale_color_manual(values=opts$colors.views) +
   labs(x="Factor number", y="Cumulative variance explained (%)") +
   geom_vline(xintercept = max.factor, linetype="dashed") +
   theme(
@@ -35,6 +32,6 @@ p <- ggline(r2.dt, x="factor", y="cum_r2", color="view") +
     axis.text = element_text(size=rel(0.8))
   )
 
-pdf(paste0(io$outdir,"/r2_vs_factor.pdf"), width=7, height=5, useDingbats = F)
+pdf(paste0(io$outdir,"/r2_vs_factor.pdf"), width=6, height=3.5, useDingbats = F)
 print(p)
 dev.off()

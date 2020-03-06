@@ -15,6 +15,6 @@ p <- plot_factors(mofa, c(1,3), color_by = "Category", dot_size = 4) +
     legend.title = element_blank(),
   )
 
-# pdf(sprintf("%s/Factor1_vs_Factor3_category.pdf",io$outdir), width=7, height=5, useDingbats = F)
+pdf(sprintf("%s/Factor1_vs_Factor3_category.pdf",io$outdir), width=7, height=5, useDingbats = F)
 print(p)
-# dev.off()
+dev.off()

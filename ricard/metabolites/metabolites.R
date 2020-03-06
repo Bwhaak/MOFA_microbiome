@@ -1,8 +1,16 @@
 library(ggpubr)
 
-############################################################
-## Plot correlation between metabolites and factor values ##
-############################################################
+give.n <- function(x){
+  return(c(y = mean(x), label = length(x)))
+}
+
+################
+## Load model ##
+################
+
+source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/metabolites"
 
 opts$metabolites <- c(
   "Butyrate_mg_feces",
@@ -11,6 +19,9 @@ opts$metabolites <- c(
   # "Isobutyrate_mg_feces"
 )
 
+############################################################
+## Plot correlation between metabolites and factor values ##
+############################################################
 
 pdf(sprintf("%s/Factors_vs_metabolites_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
 correlate_factors_with_covariates(mofa, 
@@ -57,22 +68,29 @@ for (i in opts$metabolites) {
 ## Boxplots of metabolite levels per Category ##
 ################################################
 
-give.n <- function(x){
-  return(c(y = mean(x), label = length(x)))
-}
-
 to.plot <- mofa@samples_metadata[,c("Category",opts$metabolites)] %>%
   as.data.table %>%
   melt(id.vars=c("Category"), variable.name="metabolite") %>%
   .[,metabolite:=stringr::str_replace_all(metabolite,"_mg_feces","")]
 
+# Comparisons to test statistical significance
+my.comparisons <- list( 
+  c("Healthy, no antibiotics", "Healthy, antibiotics"), 
+  c("Healthy, no antibiotics", "Sepsis"), 
+  c("Healthy, no antibiotics", "Non septic ICU")
+)
+
 p <- ggboxplot(to.plot, x="Category", y="value", fill="Category") +
   facet_wrap(~metabolite) +
   stat_summary(fun.data = give.n, geom = "text", size=4) +
   # stat_compare_means(aes(label = paste0("p = ", ..p.format..)), method="t.test") +
+  stat_compare_means(method = "wilcox.test", comparisons = my.comparisons, label = "p.signif", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), symbols = c("****", "***", "**", "*"))) +
+  # stat_compare_means(method = "wilcox.test", comparisons = my.comparisons, label = paste0("p = ", ..p.format..)) +
   scale_fill_manual(values=opts$colors) +
   labs(x="", y="Levels in feces (mg)") +
   theme(
+    axis.title.y = element_text(size=rel(1.3), color="black"),
+    strip.text = element_text(size=rel(1.3), color="black"),
     axis.text.x = element_blank(),
     legend.title = element_blank(),
     axis.ticks.x = element_blank(),

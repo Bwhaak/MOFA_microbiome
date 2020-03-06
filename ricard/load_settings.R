@@ -1,8 +1,8 @@
-library(data.table)
-library(purrr)
-library(MOFA)
-library(ggplot2)
-library(ggpubr)
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(MOFA2))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggpubr))
 
 ################
 ## Define I/O ##
@@ -21,10 +21,10 @@ opts <- list()
 
 # RColorBrewer::brewer.pal(n = 4, name = 'Set2')
 opts$colors <- c(
-  "Sepsis" = "#E78AC3",
-  "Non septic ICU" = "#FC8D62",
   "Healthy, no antibiotics" = "#66C2A5", 
-  "Healthy, antibiotics" = "#8DA0CB"
+  "Healthy, antibiotics" = "#8DA0CB",
+  "Sepsis" = "#E78AC3",
+  "Non septic ICU" = "#FC8D62"
 )
 
 # RColorBrewer::brewer.pal(n=3,name="Set1")

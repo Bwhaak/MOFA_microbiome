@@ -1,5 +1,10 @@
-source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
+################
+## Load model ##
+################
+
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor4"
 
 opts$positive.bacteria <- c(
   "Escherichia/Shigella",
@@ -174,14 +179,14 @@ p <- plot_data_scatter(mofa,
   dot_size = 3,
   features = opts$fungi,
   color_by = "Category",
-  color_legend = FALSE
+  legend = F
 ) 
-p <- p + scale_color_manual(values=opts$colors) +
+p <- p + scale_fill_manual(values=opts$colors) +
   theme(
     axis.title = element_text(size=rel(1.0)),
     axis.text = element_text(size=rel(0.8))
   )
 
-pdf(sprintf("%s/Factor4_scatter_Asperigullus.pdf",io$outdir), width=7, height=6, useDingbats = F)
+pdf(sprintf("%s/Factor4_scatter_Asperigullus.pdf",io$outdir), width=5.5, height=4.5, useDingbats = F)
 print(p)
 dev.off()

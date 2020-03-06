@@ -2,8 +2,9 @@
 ## Load model ##
 ################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
 source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+
+io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor1"
 
 #####################
 ## Define settings ##
@@ -107,7 +108,7 @@ plot_weights(mofa,
   view = "Bacteria", 
   manual = list("A"=opts$good.bacteria, "B"=opts$bad.bacteria),
   color_manual = c("black","black"),
-  text_size = 4.5
+  text_size = 5.5
 )
 dev.off()
 
@@ -118,7 +119,7 @@ plot_weights(mofa,
   dot_size = 2,
   manual = list("A"=opts$good.fungi, "B"=opts$bad.fungi),
   color_manual = c("black","black"),
-  text_size = 4.5
+  text_size = 5.5
 )
 dev.off()
 
@@ -129,7 +130,7 @@ plot_weights(mofa,
   view = "Viruses", 
   manual = list("A"=opts$good.viruses, "B"=opts$bad.viruses),
   color_manual = c("black","black"),
-  text_size = 4.5
+  text_size = 5.5
 )
 dev.off()
 
