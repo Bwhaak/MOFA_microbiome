@@ -48,15 +48,15 @@ pdf(sprintf("%s/Factor2_category.pdf",io$outdir), width=6, height=5, useDingbats
 print(p)
 dev.off()
 
-p <- plot_factors(mofa, factors=c(1,2), color_by = "Category", dot_size = 3) +
-  scale_fill_manual(values=opts$colors) +
-  theme(
-    legend.title = element_blank(),
-  )
-
-pdf(sprintf("%s/Factor1_vs_Factor2_category.pdf",io$outdir), width=7, height=5, useDingbats = F)
-print(p)
-dev.off()
+# p <- plot_factors(mofa, factors=c(1,2), color_by = "Category", dot_size = 3) +
+#   scale_fill_manual(values=opts$colors) +
+#   theme(
+#     legend.title = element_blank(),
+#   )
+# 
+# pdf(sprintf("%s/Factor1_vs_Factor2_category.pdf",io$outdir), width=7, height=5, useDingbats = F)
+# print(p)
+# dev.off()
 
 ##################
 ## Plot weights ##
@@ -151,7 +151,6 @@ for (sign in c("positive","negative")) {
 ## Plot data scatter ##
 #######################
 
-
 p <- plot_data_scatter(mofa,
   factor = 2, view = "Fungi",
   dot_size = 2,
@@ -159,7 +158,7 @@ p <- plot_data_scatter(mofa,
   # features = opts$positive.fungi,
   features = opts$negative.fungi,
   color_by = "Category",
-  color_legend = FALSE
+  legend = FALSE
 ) 
 p <- p + scale_color_manual(values=opts$colors) +
   theme(

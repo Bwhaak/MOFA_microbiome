@@ -52,17 +52,24 @@ mofa@samples_metadata$cap_Acetate_mg_feces[mofa@samples_metadata$Acetate_mg_fece
 mofa@samples_metadata$cap_Propionate_mg_feces <- mofa@samples_metadata$Propionate_mg_feces
 mofa@samples_metadata$cap_Propionate_mg_feces[mofa@samples_metadata$Propionate_mg_feces>20] <- 20
 
+p_list <- list()
 for (i in opts$metabolites) {
-  p <- plot_factors(mofa, c(1,3), color_by = paste0("cap_",i), shape_by="Category", dot_size = 3) +
+  p_list[[i]] <- plot_factors(mofa, c(1,3), color_by = paste0("cap_",i), shape_by="Category", dot_size = 3.5) +
     scale_fill_gradient(low = "white", high = "#BF3EFF") +
     theme(
+      legend.position = "none",
       legend.title = element_blank(),
     )
   
   pdf(sprintf("%s/Factor1_vs_Factor3_%s.pdf",io$outdir,i), width=6, height=5, useDingbats = F)
-  print(p)
+  print(p_list[[i]])
   dev.off()
 }
+
+p <- cowplot::plot_grid(plotlist = p_list, nrow=1)
+pdf(sprintf("%s/Factor1_vs_Factor3_all.pdf",io$outdir), width=14, height=4, useDingbats = F)
+print(p)
+dev.off()
 
 ################################################
 ## Boxplots of metabolite levels per Category ##
@@ -100,3 +107,37 @@ p <- ggboxplot(to.plot, x="Category", y="value", fill="Category") +
 pdf(sprintf("%s/Metabolites_boxplots.pdf",io$outdir), width=10, height=5, useDingbats = F)
 print(p)
 dev.off()
+
+
+######################################
+## Correlate with 16s/18s PCR ratio ##
+######################################
+
+io$pcr <- "/Users/ricard/data/mofa_microbiome/16S_PCR.csv"
+
+pcr <- fread(io$pcr) %>%
+  .[,fungal_to_bacterial_ratio:=-log(corrected_18s/corrected_16s)] %>%
+  .[,c("sample","fungal_to_bacterial_ratio")] %>%
+  merge(metadata[,c("sample","Butyrate_mg_feces", "Acetate_mg_feces", "Propionate_mg_feces","Category")], by="sample") %>%
+  melt(id.vars=c("sample","fungal_to_bacterial_ratio","Category"), variable.name="metabolite", value.name="concentration") %>%
+  .[,metabolite:=stringr::str_replace_all(metabolite,"_mg_feces","")]
+
+pcr[,log_concentration:=log10(concentration + min(.SD[concentration>0,concentration])), by="metabolite"]
+
+p <- ggscatter(pcr, x="fungal_to_bacterial_ratio", y="log_concentration", shape=21, fill="Category", size=3,
+  add="reg.line", add.params = list(color="gray70", fill="lightgray", alpha=0.7), conf.int=TRUE) +
+  ggpubr::stat_cor(method = "pearson", label.sep="\n", output.type = "latex", size = 5, color = "black") +
+  scale_fill_manual(values=opts$colors) +
+  facet_wrap(~metabolite, scales="free_y") +
+  labs(x="Fungal to Bacterial ratio (log10)", y="Metabolite concentration (log2)") +
+  theme(
+    legend.position = "none",
+    axis.text = element_text(size=rel(0.9)),
+    strip.text = element_text(size=rel(1.3))
+    
+  )
+
+pdf(sprintf("%s/FBratio_vs_Metabolites_scatterplots.pdf",io$outdir), width=14, height=4, useDingbats = F)
+print(p)
+dev.off()
+

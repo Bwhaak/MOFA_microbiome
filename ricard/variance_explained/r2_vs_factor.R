@@ -32,6 +32,6 @@ p <- ggline(r2.dt, x="factor", y="cum_r2", color="view") +
     axis.text = element_text(size=rel(0.8))
   )
 
-pdf(paste0(io$outdir,"/r2_vs_factor.pdf"), width=6, height=3.5, useDingbats = F)
+pdf(paste0(io$outdir,"/r2_vs_factor.pdf"), width=8, height=5, useDingbats = F)
 print(p)
 dev.off()

@@ -27,4 +27,8 @@ mofa <- subset_factors(mofa, factors)
 # rename factors
 factors_names(mofa) <- paste("Factor",1:get_dimensions(mofa)[["K"]], sep=" ")
 
+##########
+## Save ##
+##########
+
 saveRDS(mofa,paste0(io$basedir,"/model.rds"))
