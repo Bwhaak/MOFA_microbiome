@@ -23,9 +23,9 @@ metadata <- read.table(io$metadata, header=T) %>% as.tibble
 
 ## START TEST ## 
 # Subset samples 
-samples <- metadata %>% 
-  filter(Category%in%c("Sepsis","Non septic ICU")) %>% 
-  .$sample %>% as.character
+# samples <- metadata %>% 
+#   filter(Category%in%c("Sepsis","Non septic ICU")) %>% 
+#   .$sample %>% as.character
 ## END TEST ## 
 
 ##############
@@ -147,3 +147,5 @@ norm_v.clr <- as.data.frame(clr(count_v+0.1)) %>%
   melt(id.var = "sample", variable.name = "feature") %>%
   mutate(view = "Viruses")
 
+data <- rbind(norm_b.clr, norm_f.clr, norm_v.clr)
+fwrite(data, "/Users/ricard/data/mofa_microbiome/data/data.txt.gz", sep="\t")
