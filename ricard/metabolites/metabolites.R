@@ -23,20 +23,20 @@ opts$metabolites <- c(
 ## Plot correlation between metabolites and factor values ##
 ############################################################
 
-pdf(sprintf("%s/Factors_vs_metabolites_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
+# pdf(sprintf("%s/Factors_vs_metabolites_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
 correlate_factors_with_covariates(mofa, 
   covariates = opts$metabolites,
   plot = "r",
 )
-dev.off()
+# dev.off()
 
-pdf(sprintf("%s/Factors_vs_metabolites_logpval.pdf",io$outdir), width=7, height=6)
+# pdf(sprintf("%s/Factors_vs_metabolites_logpval.pdf",io$outdir), width=7, height=6)
 correlate_factors_with_covariates(mofa, 
   covariates = opts$metabolites,
   plot = "log_pval",
   cluster_rows = F, cluster_cols = F
 )
-dev.off()
+# dev.off()
 
 #######################################################
 ## Plot factor valoues coloured by metabolite levels ##
@@ -67,9 +67,9 @@ for (i in opts$metabolites) {
 }
 
 p <- cowplot::plot_grid(plotlist = p_list, nrow=1)
-pdf(sprintf("%s/Factor1_vs_Factor3_all.pdf",io$outdir), width=14, height=4, useDingbats = F)
+# pdf(sprintf("%s/Factor1_vs_Factor3_all.pdf",io$outdir), width=14, height=4, useDingbats = F)
 print(p)
-dev.off()
+# dev.off()
 
 ################################################
 ## Boxplots of metabolite levels per Category ##
@@ -104,9 +104,9 @@ p <- ggboxplot(to.plot, x="Category", y="value", fill="Category") +
     legend.position = "right"
   )
 
-pdf(sprintf("%s/Metabolites_boxplots.pdf",io$outdir), width=10, height=5, useDingbats = F)
-print(p)
-dev.off()
+# pdf(sprintf("%s/Metabolites_boxplots.pdf",io$outdir), width=10, height=5, useDingbats = F)
+# print(p)
+# dev.off()
 
 
 ######################################
@@ -116,20 +116,22 @@ dev.off()
 io$pcr <- "/Users/ricard/data/mofa_microbiome/16S_PCR.csv"
 
 pcr <- fread(io$pcr) %>%
-  .[,fungal_to_bacterial_ratio:=-log(corrected_18s/corrected_16s)] %>%
+  .[,fungal_to_bacterial_ratio:=-log2(corrected_18s/corrected_16s)] %>%
   .[,c("sample","fungal_to_bacterial_ratio")] %>%
   merge(metadata[,c("sample","Butyrate_mg_feces", "Acetate_mg_feces", "Propionate_mg_feces","Category")], by="sample") %>%
   melt(id.vars=c("sample","fungal_to_bacterial_ratio","Category"), variable.name="metabolite", value.name="concentration") %>%
   .[,metabolite:=stringr::str_replace_all(metabolite,"_mg_feces","")]
 
-pcr[,log_concentration:=log10(concentration + min(.SD[concentration>0,concentration])), by="metabolite"]
+# pcr[,log_concentration:=log10(concentration + min(.SD[concentration>0,concentration])), by="metabolite"]
+pcr[,log_concentration:=log2(concentration+0.1), by="metabolite"]
 
-p <- ggscatter(pcr, x="fungal_to_bacterial_ratio", y="log_concentration", shape=21, fill="Category", size=3,
+p <- ggscatter(pcr, x="fungal_to_bacterial_ratio", y="log_concentration", shape=21, fill="Category", size=3, facet.by="metabolite",
   add="reg.line", add.params = list(color="gray70", fill="lightgray", alpha=0.7), conf.int=TRUE) +
   ggpubr::stat_cor(method = "pearson", label.sep="\n", output.type = "latex", size = 5, color = "black") +
   scale_fill_manual(values=opts$colors) +
-  facet_wrap(~metabolite, scales="free_y") +
-  labs(x="Fungal to Bacterial ratio (log10)", y="Metabolite concentration (log2)") +
+  coord_cartesian(ylim=c(-4.5,6.7)) +
+  # facet_wrap(~metabolite, scales="free_y") +
+  labs(x="Fungal to Bacterial ratio (log2)", y="Metabolite concentration (log2)") +
   theme(
     legend.position = "none",
     axis.text = element_text(size=rel(0.9)),

@@ -33,14 +33,6 @@ opts$bad.bacteria <- c(
   "Escherichia/Shigella"
 )
 
-# opts$unknown.bacteria <- c(
-#   "Adlercreutzia",
-#   "CAG-56",
-#   "GCA-900066575",
-#   "Marvinbryantia",
-#   "Tyzzerella_3"
-# )
-
 opts$bad.fungi <- c(
   "Saccharomyces",
   "Aspergillus",
@@ -170,8 +162,8 @@ pdf(sprintf("%s/Factor1_fungi_heatmap.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Fungi", 
-  features = 30,
-  # features = c(opts$good.fungi,opts$bad.fungi),
+  # features = 20,
+  features = c(opts$good.fungi,opts$bad.fungi),
   denoise = TRUE, 
   legend = TRUE,
   cluster_rows = T, cluster_cols = F,
@@ -185,57 +177,70 @@ dev.off()
 ## Viruses ##
 
 pdf(sprintf("%s/Factor1_viruses_heatmap.pdf",io$outdir), width=5, height=5)
-plot_data_heatmap(mofa, 
-  factor = 1, 
-  view = "Viruses", 
-  features = c(opts$good.viruses,opts$bad.viruses),
-  denoise = TRUE, 
+plot_data_heatmap(mofa,
+  factor = 1,
+  view = "Viruses",
+  # features = c(opts$good.viruses,opts$bad.viruses),
+  features = opts$bad.viruses,
+  denoise = TRUE,
   legend = TRUE,
-  cluster_rows = T, cluster_cols = F,
+  min.value = 0, max.value = 6,
+  cluster_rows = F, cluster_cols = F,
   show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
-  scale = "row"
+  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F
 )
 dev.off()
 
 
-
+# p <- plot_data_scatter(
+#   mofa, 
+#   factor = 1, 
+#   view = "Viruses", 
+#   # features = opts$bad.viruses,
+#   features = "Enterococcus phage",
+#   color_by = "Category",
+#   legend = FALSE,
+#   stroke = 0.5
+# ) + scale_fill_manual(values=opts$colors) 
+# 
+# pdf(sprintf("%s/Factor1_virus_scatter.pdf",io$outdir), width=5, height=5, useDingbats = F)
+# print(p)
+# dev.off()
 
 
 #########################################
 ## Plot factor values coloured by OTUs ##
 #########################################
 
-# plot factor values coloured by features with top weights
-nfeatures <- 4
-nrow <- 2; ncol <- 2
-
-for (sign in c("positive","negative")) {
-  for (i in views(mofa)) {
-    
-    weights <- sort(get_weights(mofa, factor=1, views=i)[[1]][,1])
-    if (sign=="positive") {
-      features <- names( tail(weights,n=nfeatures) )
-    } else {
-      features <- names( head(weights,n=nfeatures) )
-    }
-    
-    p_list <- list()
-    for (j in features) {
-      p_list[[j]] <- plot_factors(mofa, c(1,3), color_by = j, dot_size = 3.0, legend=FALSE) +
-        ggtitle(j) +
-        theme(
-          plot.title = element_text(hjust = 0.5, size=rel(1.2)),
-          axis.title = element_text(size=rel(0.8)),
-          axis.text = element_text(size=rel(0.8))
-        )
-    }
-    p <- cowplot::plot_grid(plotlist=p_list, nrow=nrow, ncol=ncol)
-    
-    pdf(sprintf("%s/Factor1_vs_Factor3_%s_%s.pdf",io$outdir,i,sign), width=8, height=7, useDingbats = F)
-    print(p)
-    dev.off()
-      
-  }
-
-}
+# # plot factor values coloured by features with top weights
+# nfeatures <- 4
+# nrow <- 2; ncol <- 2
+# 
+# for (sign in c("positive","negative")) {
+#   for (i in views(mofa)) {
+#     
+#     weights <- sort(get_weights(mofa, factor=1, views=i)[[1]][,1])
+#     if (sign=="positive") {
+#       features <- names( tail(weights,n=nfeatures) )
+#     } else {
+#       features <- names( head(weights,n=nfeatures) )
+#     }
+#     
+#     p_list <- list()
+#     for (j in features) {
+#       p_list[[j]] <- plot_factors(mofa, c(1,3), color_by = j, dot_size = 3.0, legend=FALSE) +
+#         ggtitle(j) +
+#         theme(
+#           plot.title = element_text(hjust = 0.5, size=rel(1.2)),
+#           axis.title = element_text(size=rel(0.8)),
+#           axis.text = element_text(size=rel(0.8))
+#         )
+#     }
+#     p <- cowplot::plot_grid(plotlist=p_list, nrow=nrow, ncol=ncol)
+#     
+#     pdf(sprintf("%s/Factor1_vs_Factor3_%s_%s.pdf",io$outdir,i,sign), width=8, height=7, useDingbats = F)
+#     print(p)
+#     dev.off()
+#       
+#   }
+# }

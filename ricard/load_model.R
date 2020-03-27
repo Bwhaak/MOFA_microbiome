@@ -33,8 +33,7 @@ factors_names(mofa) <- paste("Factor",1:get_dimensions(mofa)[["K"]], sep=" ")
 
 # saveRDS(mofa,paste0(io$basedir,"/model.rds"))
 
-
-metadata.cols <- c("sample", "Age", "Seks", "Main_diagnosis", "Category",  "Penicillins", "Cephalosporins", "Carbapenems", "Macrolides", "Aminoglycosides", "Quinolones", "Co_trimoxazole", "Metronidazole", "Vancomycin", "Acetate_mg_feces", "Propionate_mg_feces", "Butyrate_mg_feces")
-foo <- metadata[,metadata.cols] %>% as.data.table
-fwrite(foo, "/Users/ricard/data/mofa_microbiome/data/metadata.txt.gz", sep="\t")
+# metadata.cols <- c("sample", "Age", "Seks", "Main_diagnosis", "Category",  "Penicillins", "Cephalosporins", "Carbapenems", "Macrolides", "Aminoglycosides", "Quinolones", "Co_trimoxazole", "Metronidazole", "Vancomycin", "Acetate_mg_feces", "Propionate_mg_feces", "Butyrate_mg_feces")
+# foo <- metadata[,metadata.cols] %>% as.data.table
+# fwrite(foo, "/Users/ricard/data/mofa_microbiome/data/metadata.txt.gz", sep="\t")
 
