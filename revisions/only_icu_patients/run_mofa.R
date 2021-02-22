@@ -1,13 +1,20 @@
+####################
+# Define settings ##
+####################
 
-io <- list()
-io$basedir <- "/Users/ricard/data/mofa_microbiome"
-io$outdir <- paste0(io$basedir, "/hdf5")
+source("/Users/ricard/mofa/MOFA_microbiome/load_settings.R")
+io$outfile <- paste0(io$basedir, "/icu.hdf5")
 
 #######################
 # Create MOFA object ##
 #######################
 
-mofa <- create_mofa(rbind(norm_b.clr, norm_f.clr, norm_v.clr))
+data <- fread(paste0(io$basedir,"/data/data_Genus.txt.gz"))
+
+# Subset ICU patients
+metadata[Category%in%c("Healthy, no antibiotics")]
+table(metadata$Category)
+mofa <- create_mofa(data)
 
 # Visualise data structure
 plot_data_overview(mofa)
@@ -38,6 +45,5 @@ mofa <- prepare_mofa(mofa,
 ## Train the model ##
 #####################
 
-outfile <- paste0(io$outdir,"/icu.hdf5")
-mofa <- run_mofa(mofa, outfile)
+mofa <- run_mofa(mofa, io$outfile)
 

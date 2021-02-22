@@ -1,11 +1,11 @@
-source("/Users/ricard/MOFA_microbiome/ricard/load_settings.R")
+source("/Users/ricard/mofa/MOFA_microbiome/load_settings.R")
 
 ################
 ## Load model ##
 ################
 
 # Load model
-mofa <- load_model(io$mofa)
+mofa <- load_model(io$mofa.hdf5)
 
 # add metadata to the model
 metadata <- fread(io$metadata) %>%
@@ -20,7 +20,7 @@ samples_metadata(mofa) <- metadata
 
 # subset factors
 threshold.var <- 5
-r2 <- mofa@cache$variance_explained$r2_per_factor[[1]]*100
+r2 <- mofa@cache$variance_explained$r2_per_factor[[1]]
 factors <- which(apply(r2,1,sum) >= threshold.var)
 mofa <- subset_factors(mofa, factors)
 

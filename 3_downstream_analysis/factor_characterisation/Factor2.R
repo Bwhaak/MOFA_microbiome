@@ -2,9 +2,13 @@
 ## Load model ##
 ################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+source("/Users/ricard/mofa/MOFA_microbiome/3_downstream_analysis/load_model.R")
 
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor2"
+#####################
+## Define settings ##
+#####################
+
+io$outdir <- paste0(io$basedir,"/results/Factor2")
 
 opts$negative.fungi <- c(
     "Paraphaeosphaeria",
@@ -86,6 +90,8 @@ dev.off()
 ## Plot heatmaps ##
 ###################
 
+mofa@samples_metadata$Factor2 <- mofa@expectations$Z[[1]][,"Factor 2"]
+
 pdf(sprintf("%s/Factor2_fungi_heatmap.pdf",io$outdir), width=7, height=5)
 plot_data_heatmap(mofa, 
   factor = 2, 
@@ -96,6 +102,7 @@ plot_data_heatmap(mofa,
   cluster_rows = T, cluster_cols = F,
   show_colnames = F, show_rownames = T,
   annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+  # annotation_samples = "Factor2", annotation_legend = F,
   scale = "row"
 )
 dev.off()

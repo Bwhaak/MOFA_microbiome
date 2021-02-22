@@ -9,9 +9,12 @@ suppressPackageStartupMessages(library(ggpubr))
 ################
 
 io <- list()
-io$basedir <- "/Users/ricard/data/mofa_microbiome"
-io$mofa <- paste0(io$basedir, "/hdf5/test.hdf5")
+io$basedir <- "/Users/ricard/data/mofa/mofa_microbiome"
+io$mofa.hdf5 <- paste0(io$basedir, "/trained_model/model.hdf5")
+io$mofa.rds <- paste0(io$basedir, "/trained_model/model.rds")
 io$metadata <- paste0(io$basedir, "/metadata.txt.gz")
+io$unnormalised.data <- paste0(io$basedir, "/data/original/source_data_MOFA_microbiome.RDS")
+io$normalised.data <- paste0(io$basedir, "/data/data.txt.gz")
 
 ####################
 ## Define options ##
@@ -34,3 +37,8 @@ opts$colors.views <- c(
   "Viruses" = "#4DAF4A"
 )
   
+###############
+## Load data ##
+###############
+
+metadata <- fread(io$metadata)

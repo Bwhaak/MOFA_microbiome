@@ -1,14 +1,14 @@
-#####################
+################
 ## Load model ##
-#####################
+################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
-
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor3"
+source("/Users/ricard/mofa/MOFA_microbiome/3_downstream_analysis/load_model.R")
 
 #####################
 ## Define settings ##
 #####################
+
+io$outdir <- paste0(io$basedir,"/results/Factor3")
 
 opts$positive.bacteria <- c(
   "Streptococcus",
@@ -120,6 +120,8 @@ dev.off()
 ## Plot heatmaps ##
 ###################
 
+mofa@samples_metadata$Factor3 <- mofa@expectations$Z[[1]][,"Factor 3"]
+
 ## Bacteria ##
 
 pdf(sprintf("%s/Factor3_bacteria_heatmap.pdf",io$outdir), width=5, height=5)
@@ -131,7 +133,8 @@ plot_data_heatmap(mofa,
                   legend = FALSE,
                   cluster_rows = T, cluster_cols = F,
                   show_colnames = F, show_rownames = T,
-                  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+                  # annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+                  annotation_samples = "Factor3", annotation_legend = F,
                   scale = "row"
 )
 dev.off()

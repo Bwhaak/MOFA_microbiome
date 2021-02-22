@@ -2,31 +2,25 @@ library(tidyverse)
 library(compositions)
 library(reshape2)
 library(readr)
-library(DESeq2)
+# library(DESeq2)
 library(corrplot)
 
 #####################
 ## Define settings ##
 #####################
 
-io <- list()
+source("/Users/ricard/MOFA_microbiome/load_settings.R")
+
 io$basedir <- "/Users/ricard/data/mofa_microbiome"
-io$data <- paste0(io$basedir, "/rds/source_data_MOFA_microbiome.RDS")
-io$metadata <- paste0(io$basedir, "/metadata.txt.gz")
+io$unnormalised_data <- paste0(io$basedir, "/data/original/source_data_MOFA_microbiome.RDS")
+io$outfile <- paste0(io$basedir, "/data/data.txt.gz")
 
 ###############
 ## Load data ##
 ###############
 
-load(io$data)
+load(io$unnormalised_data)
 metadata <- read.table(io$metadata, header=T) %>% as.tibble
-
-## START TEST ## 
-# Subset samples 
-# samples <- metadata %>% 
-#   filter(Category%in%c("Sepsis","Non septic ICU")) %>% 
-#   .$sample %>% as.character
-## END TEST ## 
 
 ##############
 ## Bacteria ##
@@ -148,4 +142,4 @@ norm_v.clr <- as.data.frame(clr(count_v+0.1)) %>%
   mutate(view = "Viruses")
 
 data <- rbind(norm_b.clr, norm_f.clr, norm_v.clr)
-fwrite(data, "/Users/ricard/data/mofa_microbiome/data/data.txt.gz", sep="\t")
+fwrite(data, io$outfile, sep="\t")

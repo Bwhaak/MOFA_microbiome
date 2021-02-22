@@ -4,9 +4,13 @@ library(ggpubr)
 ## Load model ##
 ################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+source("/Users/ricard/mofa/MOFA_microbiome/3_downstream_analysis/load_model.R")
 
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/antibiotics"
+#####################
+## Define settings ##
+#####################
+
+io$outdir <- paste0(io$basedir,"/results/antibiotics")
 
 antibiotics <- c("Penicillins", "Cephalosporins", "Carbapenems", 
   "Clavulanic_acid", "Macrolides", "Aminoglycosides", 
@@ -16,10 +20,11 @@ antibiotics <- c("Penicillins", "Cephalosporins", "Carbapenems",
 ## Plot correlation between antibiotics and factor values ##
 ############################################################
 
-pdf(sprintf("%s/Factors_vs_antibiotics_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
+pdf(sprintf("%s/revision3_Factors_vs_antibiotics_pearson_reverse_colour.pdf",io$outdir), width=7, height=6, useDingbats = F)
 correlate_factors_with_covariates(mofa, 
   covariates = antibiotics,
   plot = "r",
+  col = colorRampPalette(c("blue","white","red"))(200)
 )
 dev.off()
 

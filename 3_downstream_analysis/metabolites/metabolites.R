@@ -8,9 +8,9 @@ give.n <- function(x){
 ## Load model ##
 ################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
+source("/Users/ricard/mofa/MOFA_microbiome/3_downstream_analysis/load_model.R")
 
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/metabolites"
+io$outdir <- paste0(io$basedir,"/results/metabolites/revision")
 
 opts$metabolites <- c(
   "Butyrate_mg_feces",
@@ -23,12 +23,14 @@ opts$metabolites <- c(
 ## Plot correlation between metabolites and factor values ##
 ############################################################
 
-# pdf(sprintf("%s/Factors_vs_metabolites_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
+pdf(sprintf("%s/Factors_vs_metabolites_pearson.pdf",io$outdir), width=7, height=6, useDingbats = F)
 correlate_factors_with_covariates(mofa, 
   covariates = opts$metabolites,
+  abs = FALSE,
   plot = "r",
+  col = colorRampPalette(c("blue","white","red"))(200)
 )
-# dev.off()
+dev.off()
 
 # pdf(sprintf("%s/Factors_vs_metabolites_logpval.pdf",io$outdir), width=7, height=6)
 correlate_factors_with_covariates(mofa, 

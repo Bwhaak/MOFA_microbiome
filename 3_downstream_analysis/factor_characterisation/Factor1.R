@@ -2,13 +2,13 @@
 ## Load model ##
 ################
 
-source("/Users/ricard/MOFA_microbiome/ricard/load_model.R")
-
-io$outdir <- "/Users/ricard/data/mofa_microbiome/pdf/Factor1"
+source("/Users/ricard/mofa/MOFA_microbiome/3_downstream_analysis/load_model.R")
 
 #####################
 ## Define settings ##
 #####################
+
+io$outdir <- paste0(io$basedir,"/results/Factor1")
 
 opts$good.bacteria <- c(
   "Agathobacter",
@@ -139,9 +139,11 @@ plot_top_weights(mofa, factors=1, view="Viruses", sign = "both", abs=T, scale=F,
 ## Plot heatmaps ##
 ###################
 
+mofa@samples_metadata$Factor1 <- mofa@expectations$Z[[1]][,"Factor 1"]
+
 ## Bacteria ##
 
-pdf(sprintf("%s/Factor1_bacteria_heatmap.pdf",io$outdir), width=5, height=5)
+pdf(sprintf("%s/Factor1_bacteria_heatmap_foo.pdf",io$outdir), width=5, height=5)
 plot_data_heatmap(mofa, 
   factor = 1, 
   view = "Bacteria", 
@@ -150,7 +152,8 @@ plot_data_heatmap(mofa,
   legend = TRUE,
   cluster_rows = T, cluster_cols = F,
   show_colnames = F, show_rownames = T,
-  annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+  # annotation_samples = "Category",  annotation_colors = list("Category"=opts$colors), annotation_legend = F,
+  annotation_samples = "Factor1", annotation_legend = F,
   scale = "row"
 )
 dev.off()
@@ -244,3 +247,69 @@ dev.off()
 #       
 #   }
 # }
+
+
+######################################
+## Boxplots requested by Reviewer 3 ##
+######################################
+
+data <- get_data(mofa, as.data.frame = T, denoise = T) %>% as.data.table %>%
+  merge(metadata[,c("sample","Category")],by="sample")
+
+# Scale each feature from -1 to 1
+data[,value:=scales::rescale(value, to=c(0,1)), by=c("view","feature")]
+
+opts$bacteria <- c(opts$good.bacteria,opts$bad.bacteria)
+to.plot <- data[view=="Bacteria" & feature%in%opts$bacteria] %>%
+  .[,feature:=factor(feature,levels=opts$bacteria)]
+
+p <- ggboxplot(to.plot, x="Category", y="value", facet="feature", fill="Category") +
+  labs(x="", y="Bacteria abundance (scaled)") +
+  scale_fill_manual(values=opts$colors) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size=rel(0.6)),
+    legend.title = element_blank()
+  )
+
+pdf(sprintf("%s/revision2_Factor1_boxplots_bacteria.pdf",io$outdir), width=7, height=7)
+print(p)
+dev.off()
+
+
+opts$fungi <- c(opts$good.fungi,opts$bad.fungi)
+to.plot <- data[view=="Fungi" & feature%in%opts$fungi] %>%
+  .[,feature:=factor(feature,levels=opts$fungi)]
+
+p <- ggboxplot(to.plot, x="Category", y="value", facet="feature", fill="Category") +
+  labs(x="", y="Fungi abundance (scaled)") +
+  scale_fill_manual(values=opts$colors) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size=rel(0.6)),
+    legend.title = element_blank()
+  )
+
+pdf(sprintf("%s/revision2_Factor1_boxplots_fungi.pdf",io$outdir), width=7, height=7)
+print(p)
+dev.off()
+
+opts$viruses <- c(opts$good.viruses,opts$bad.viruses)
+to.plot <- data[view=="Viruses" & feature%in%opts$viruses] %>%
+  .[,feature:=factor(feature,levels=opts$viruses)]
+
+p <- ggboxplot(to.plot, x="Category", y="value", facet="feature", fill="Category") +
+  labs(x="", y="Virus abundance (scaled)") +
+  scale_fill_manual(values=opts$colors) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size=rel(0.6)),
+    legend.title = element_blank()
+  )
+
+pdf(sprintf("%s/revision2_Factor1_boxplots_virus.pdf",io$outdir), width=7, height=7)
+print(p)
+dev.off()
