@@ -18,7 +18,7 @@ A vignette is provided in the [MOFA tutorials section](https://raw.githack.com/b
 
 Data
 -------
-The raw data is accessible at GEO ([XXX](xx)). 
+The raw data is accessible at ENA ([PRJEB37289](xx)). 
 For links to the parsed data and the pre-computed MOFA model, see the vignette above
 
 Contact
